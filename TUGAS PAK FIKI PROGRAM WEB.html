@@ -6,6 +6,15 @@
 
     <!-- ===================== CSS (TAMPILAN) ===================== -->
     <style>
+        .action-img {
+    width: 20px; /* ukuran ikon */
+    cursor: pointer; /* kursor jadi tangan */
+    margin: 0 5px; /* jarak antar ikon */
+}
+
+.action-img:hover {
+    transform: scale(1.2); /* efek zoom */
+}
     body {
         font-family: Arial; /* Mengatur jenis huruf agar mudah dibaca */
         margin: 0; /* Menghilangkan jarak luar default browser */
@@ -60,7 +69,6 @@
     gap: 20px;
     }
 
-
     button {
         padding: 10px 15px; /* Mengatur ukuran tombol */
         margin-right: 5px; /* Memberikan jarak antar tombol */
@@ -84,8 +92,7 @@
         width: 100%; /* Membuat tabel memenuhi lebar container */
         border-collapse: collapse; /* Menggabungkan garis tabel */
         background: #f8f8f8; /* Warna latar tabel */
-        border-radius: 20p
-    x; /* Membulatkan sudut tabel */
+        border-radius: 20px; /* (FIX kecil typo dari code kamu) */
         overflow: hidden; /* Menyembunyikan bagian yang keluar */
         box-shadow: 0 8px 20px rgba(0,0,0,0.2); /* Memberikan efek bayangan */
     }
@@ -99,59 +106,65 @@
         padding: 10px; /* Memberikan ruang di dalam sel tabel */
         text-align: center; /* Mengatur teks berada di tengah */
     }
+
+    /* ===== TAMBAHAN: STYLE SEARCH ===== */
+    #search {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 10px;
+        border-radius: 8px;
+    }
     </style>
 </head>
-
 
 <!-- ===================== HTML (STRUKTUR) ===================== -->
 <body>
 
-<div class="container"> <!-- Digunakan sebagai pembungkus agar seluruh konten berada di tengah -->
+<div class="container">
 
-<h2>Form Data Mahasiswa</h2> <!-- Judul utama halaman -->
+<h2>Form Data Mahasiswa</h2>
 
-<form id="formMahasiswa"> <!-- Form untuk memasukkan data mahasiswa -->
+<form id="formMahasiswa">
 
     <div class="row">
-        <input type="text" id="nim" placeholder="NIM" required> <!-- Input untuk memasukkan NIM mahasiswa sebagai identitas unik -->
-        <input type="text" id="nama" placeholder="Nama" required> <!-- Input untuk memasukkan nama lengkap mahasiswa -->
+        <input type="text" id="nim" placeholder="NIM" required>
+        <input type="text" id="nama" placeholder="Nama" required>
     </div>
 
-    <textarea id="alamat" placeholder="Alamat"></textarea> <!-- Area teks untuk memasukkan alamat tempat tinggal mahasiswa -->
+    <textarea id="alamat" placeholder="Alamat"></textarea>
 
     <div class="radio">
     <label>Jenis Kelamin:</label>
 
     <div class="radio-group">
-        <label>
-            <input type="radio" name="jk" value="Pria"> Pria
-        </label>
-
-        <label>
-            <input type="radio" name="jk" value="Wanita"> Wanita
-        </label>
+        <label><input type="radio" name="jk" value="Pria"> Pria</label>
+        <label><input type="radio" name="jk" value="Wanita"> Wanita</label>
     </div>
 </div>
+
     <div class="row">
     <label>Tanggal Lahir:</label>
-        <select id="tanggal"></select> <!-- Dropdown untuk memilih tanggal lahir -->
-        <select id="bulan"></select> <!-- Dropdown untuk memilih bulan lahir -->
-        <select id="tahun"></select> <!-- Dropdown untuk memilih tahun lahir -->
+        <select id="tanggal"></select>
+        <select id="bulan"></select>
+        <select id="tahun"></select>
     </div>
 
-    <input type="password" id="password" placeholder="Password"> <!-- Input untuk memasukkan password (disembunyikan) -->
+    <input type="password" id="password" placeholder="Password">
 
-    <button type="submit" class="submit" id="btnSubmit">Submit</button> <!-- Tombol untuk mengirim data -->
-    <button type="reset" class="reset">Reset</button> <!-- Tombol untuk mengosongkan form -->
+    <button type="submit" class="submit" id="btnSubmit">Submit</button>
+    <button type="reset" class="reset">Reset</button>
 
 </form>
 
-<h2>Data Mahasiswa</h2> <!-- Judul tabel -->
+<h2>Data Mahasiswa</h2>
+
+<!-- ===== TAMBAHAN SEARCH ===== -->
+<input type="text" id="search" placeholder="Cari Nama atau NIM...">
 
 <table>
     <thead>
         <tr>
-            <th>NIM</th> <!-- Kolom identitas mahasiswa -->
+            <th>NIM</th>
             <th>Nama</th>
             <th>Alamat</th>
             <th>JK</th>
@@ -160,60 +173,55 @@
             <th>Aksi</th>
         </tr>
     </thead>
-    <tbody id="tableBody"></tbody> <!-- Tempat menampilkan data mahasiswa secara dinamis -->
+    <tbody id="tableBody"></tbody>
 </table>
 
 </div>
 
-
 <!-- ===================== JAVASCRIPT (FUNGSI) ===================== -->
 <script>
-const form = document.getElementById("formMahasiswa"); // Menghubungkan variabel dengan elemen form agar bisa diproses menggunakan JavaScript
-const tableBody = document.getElementById("tableBody"); // Mengambil bagian body tabel sebagai tempat menampilkan data
-const btnSubmit = document.getElementById("btnSubmit"); // Mengambil tombol submit untuk mengubah teks saat edit
+const form = document.getElementById("formMahasiswa");
+const tableBody = document.getElementById("tableBody");
+const btnSubmit = document.getElementById("btnSubmit");
 
-let editRow = null; // Variabel untuk menyimpan baris yang sedang diedit agar bisa diperbarui
+let editRow = null;
 
-// Mengisi dropdown tanggal secara otomatis dari 1 sampai 31
 const tanggal = document.getElementById("tanggal");
 for (let i = 1; i <= 31; i++) {
-    let val = i.toString().padStart(2, "0"); // Mengubah angka menjadi format dua digit (contoh: 01, 02)
-    tanggal.innerHTML += `<option value="${val}">${val}</option>`; // Menambahkan pilihan ke dalam dropdown
+    let val = i.toString().padStart(2, "0");
+    tanggal.innerHTML += `<option value="${val}">${val}</option>`;
 }
 
-// Mengisi dropdown bulan menggunakan array nama bulan
 const bulan = document.getElementById("bulan");
 const namaBulan = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
 namaBulan.forEach((b, i) => {
-    let val = (i+1).toString().padStart(2, "0"); // Memberikan nilai angka bulan
-    bulan.innerHTML += `<option value="${val}">${b}</option>`; // Menampilkan nama bulan
+    let val = (i+1).toString().padStart(2, "0");
+    bulan.innerHTML += `<option value="${val}">${b}</option>`;
 });
 
-// Mengisi dropdown tahun dari 1980 sampai 2020
 const tahun = document.getElementById("tahun");
 for (let i = 1980; i <= 2026; i++) {
     tahun.innerHTML += `<option value="${i}">${i}</option>`;
 }
 
-// Event ketika form disubmit
+/* ===================== SUBMIT DATA ===================== */
 form.addEventListener("submit", function(e) {
-    e.preventDefault(); // Mencegah halaman reload agar data bisa diproses di halaman yang sama
+    e.preventDefault();
 
-    const nim = document.getElementById("nim").value; // Mengambil nilai NIM yang dimasukkan pengguna sebagai identitas mahasiswa
-    const nama = document.getElementById("nama").value; // Mengambil nama mahasiswa yang diinput
-    const alamat = document.getElementById("alamat").value; // Mengambil alamat tempat tinggal mahasiswa
-    const tgl = tanggal.value;
-    const bln = bulan.value;
-    const thn = tahun.value;
-    const password = document.getElementById("password").value; // Mengambil password yang diinput pengguna
+    /* ===== TAMBAHAN KONFIRMASI ===== */
+    if (!confirm("Apakah data sudah valid?")) return;
 
-    const jk = document.querySelector('input[name="jk"]:checked'); // Mengambil pilihan jenis kelamin yang dipilih
-    const jenisKelamin = jk ? jk.value : "-"; // Jika tidak dipilih maka diberi tanda "-"
+    const nim = document.getElementById("nim").value;
+    const nama = document.getElementById("nama").value;
+    const alamat = document.getElementById("alamat").value;
+    const password = document.getElementById("password").value;
 
-    const tl = `${tgl}-${bln}-${thn}`; // Menggabungkan tanggal, bulan, dan tahun menjadi satu format
+    const jk = document.querySelector('input[name="jk"]:checked');
+    const jenisKelamin = jk ? jk.value : "-";
+
+    const tl = `${tanggal.value}-${bulan.value}-${tahun.value}`;
 
     if (editRow) {
-        // Jika sedang dalam mode edit, maka data lama akan diperbarui
         editRow.cells[0].innerText = nim;
         editRow.cells[1].innerText = nama;
         editRow.cells[2].innerText = alamat;
@@ -221,58 +229,87 @@ form.addEventListener("submit", function(e) {
         editRow.cells[4].innerText = tl;
         editRow.cells[5].innerText = password;
 
-        editRow = null; // Mengembalikan ke mode tambah data
-        btnSubmit.innerText = "Submit"; // Mengubah kembali teks tombol
+        editRow = null;
+        btnSubmit.innerText = "Submit";
     } else {
-        // Jika bukan edit, maka membuat baris baru untuk data mahasiswa
         const row = document.createElement("tr");
 
         row.innerHTML = `
-    <td>${nim}</td>
-    <td>${nama}</td>
-    <td>${alamat}</td>
-    <td>${jenisKelamin}</td>
-    <td>${tl}</td>
-    <td>${password}</td>
-    <td>
-        <img src="edit.png" onclick="editData(this)" style="width:20px; cursor:pointer;">
-        <img src="hapus.png" onclick="hapusData(this)" style="width:20px; cursor:pointer;">
-    </td>
-`;
+        <td>${nim}</td>
+        <td>${nama}</td>
+        <td>${alamat}</td>
+        <td>${jenisKelamin}</td>
+        <td>${tl}</td>
+        <td>${password}</td>
+        <td>
+            <img src="https://cdn-icons-png.flaticon.com/512/5935/5935145.png" 
+            class="action-img" onclick="editData(this)">
+            <img src="https://cdn-icons-png.flaticon.com/512/6861/6861362.png" 
+            class="action-img" onclick="hapusData(this)">
+        </td>`;
 
-        tableBody.appendChild(row); // Menambahkan baris ke dalam tabel
+        tableBody.appendChild(row);
     }
 
-    form.reset(); // Mengosongkan kembali form setelah data dimasukkan
+    form.reset();
 });
 
-// Fungsi untuk menghapus data dari tabel
+/* ===================== HAPUS DATA ===================== */
 function hapusData(btn) {
-    btn.parentElement.parentElement.remove(); // Menghapus baris tempat tombol ditekan
+    /* ===== TAMBAHAN KONFIRMASI ===== */
+    if (confirm("Yakin ingin menghapus data?")) {
+        btn.parentElement.parentElement.remove();
+    }
 }
-
-// Fungsi untuk mengedit data yang sudah ada
+/* ===================== EDIT DATA ===================== */
 function editData(btn) {
-    editRow = btn.parentElement.parentElement; // Menyimpan baris yang dipilih
+    editRow = btn.parentElement.parentElement; 
+    // Mengambil baris (row) dari tabel berdasarkan tombol yang diklik
 
-    document.getElementById("nim").value = editRow.cells[0].innerText; // Mengisi kembali input dengan data lama
-    document.getElementById("nama").value = editRow.cells[1].innerText;
-    document.getElementById("alamat").value = editRow.cells[2].innerText;
+    document.getElementById("nim").value = editRow.cells[0].innerText; 
+    // Mengisi input NIM dengan data dari tabel
+
+    document.getElementById("nama").value = editRow.cells[1].innerText; 
+    // Mengisi input Nama
+
+    document.getElementById("alamat").value = editRow.cells[2].innerText; 
+    // Mengisi input Alamat
 
     const jkValue = editRow.cells[3].innerText;
+    // Mengambil nilai jenis kelamin dari tabel
+
     document.querySelectorAll('input[name="jk"]').forEach(r => {
-        r.checked = (r.value === jkValue); // Menyesuaikan radio button dengan data sebelumnya
+        r.checked = (r.value === jkValue); 
+        // Menyesuaikan radio button sesuai data sebelumnya
     });
 
     const ttl = editRow.cells[4].innerText.split("-");
+    // Memecah tanggal lahir menjadi array [tanggal, bulan, tahun]
+
     tanggal.value = ttl[0];
     bulan.value = ttl[1];
     tahun.value = ttl[2];
+    // Mengisi kembali dropdown tanggal, bulan, tahun
 
     document.getElementById("password").value = editRow.cells[5].innerText;
+    // Mengisi kembali password
 
-    btnSubmit.innerText = "Update"; // Mengubah tombol menjadi mode update
+    btnSubmit.innerText = "Update"; 
+    // Mengubah tombol submit menjadi mode update
 }
+/* ===================== SEARCH DATA ===================== */
+document.getElementById("search").addEventListener("keyup", function() {
+
+    let filter = this.value.toLowerCase();
+    let rows = tableBody.getElementsByTagName("tr");
+
+    for (let i = 0; i < rows.length; i++) {
+        let nim = rows[i].cells[0].innerText.toLowerCase();
+        let nama = rows[i].cells[1].innerText.toLowerCase();
+
+        rows[i].style.display = (nim.includes(filter) || nama.includes(filter)) ? "" : "none";
+    }
+});
 </script>
 
 </body>
